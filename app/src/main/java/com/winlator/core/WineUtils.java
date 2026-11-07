@@ -218,10 +218,71 @@ public abstract class WineUtils {
         return false;
     }
 
+    /**
+     * Makes web browsers usable under Wine + Box64:
+     * - Firefox: fewer content processes and no per-site process isolation (Fission). Every
+     *   new process has to re-translate xul.dll (~150MB of x86-64 code) through Box64, which
+     *   was the main reason Firefox felt so slow. Applied as default prefs, so the user can
+     *   still change them in about:config.
+     * - Chrome/Edge: policies that stop background work; the sandbox flags Chromium needs
+     *   under Wine are passed through default.box64rc (WINEARGS).
+     */
+    public static void applyBrowserPolicies(Container container) {
+        File systemRegFile = new File(container.getRootDir(), ".wine/system.reg");
+
+        try (WineRegistryEditor registryEditor = new WineRegistryEditor(systemRegFile)) {
+            final String firefoxPolicies = "Software\\Policies\\Mozilla\\Firefox";
+            registryEditor.setDwordValue(firefoxPolicies, "DisableTelemetry", 1);
+            registryEditor.setDwordValue(firefoxPolicies, "DisableFirefoxStudies", 1);
+            registryEditor.setDwordValue(firefoxPolicies, "DisableDefaultBrowserAgent", 1);
+
+            final String chromePolicies = "Software\\Policies\\Google\\Chrome";
+            final String edgePolicies = "Software\\Policies\\Microsoft\\Edge";
+            for (String key : new String[]{chromePolicies, edgePolicies}) {
+                registryEditor.setDwordValue(key, "BackgroundModeEnabled", 0);
+                registryEditor.setDwordValue(key, "MetricsReportingEnabled", 0);
+                registryEditor.setDwordValue(key, "StartupBoostEnabled", 0);
+            }
+        }
+    }
+
+    /** Cheap: only writes Firefox's default prefs file when Firefox is installed and it changed. */
+    public static void applyBrowserTweaks(Container container) {
+        File rootDir = container.getRootDir();
+
+        final String firefoxPrefs = String.join("\n",
+            "// Added by Winlator: tuned for Wine + Box64 (x86-64 emulation). Remove to restore Firefox defaults.",
+            "pref(\"fission.autostart\", false);",
+            "pref(\"dom.ipc.processCount\", 2);",
+            "pref(\"dom.ipc.processCount.webIsolated\", 1);",
+            "pref(\"dom.ipc.processPrelaunch.enabled\", false);",
+            "pref(\"browser.tabs.unloadOnLowMemory\", true);",
+            "pref(\"browser.sessionstore.interval\", 60000);",
+            "pref(\"layout.frame_rate\", 60);",
+            "pref(\"toolkit.telemetry.enabled\", false);",
+            "pref(\"datareporting.healthreport.uploadEnabled\", false);",
+            "pref(\"extensions.pocket.enabled\", false);",
+            ""
+        );
+
+        for (String programFiles : new String[]{"Program Files", "Program Files (x86)"}) {
+            File firefoxDir = new File(rootDir, ".wine/drive_c/"+programFiles+"/Mozilla Firefox");
+            if (!new File(firefoxDir, "firefox.exe").isFile()) continue;
+            File prefDir = new File(firefoxDir, "defaults/pref");
+            if (!prefDir.isDirectory()) prefDir.mkdirs();
+            File prefFile = new File(prefDir, "winlator.js");
+            if (!firefoxPrefs.equals(FileUtils.readString(prefFile))) FileUtils.writeString(prefFile, firefoxPrefs);
+        }
+    }
+
     public static void changeServicesStatus(Container container, byte startupSelection) {
         final byte SERVICE_DISABLED = 4;
-        final String[] services = {"BITS:3", "Eventlog:2", "HTTP:3", "LanmanServer:3", "NDIS:2", "PlugPlay:2", "RpcSs:3", "scardsvr:3", "Schedule:3", "Spooler:3", "StiSvc:3", "TermService:3", "Winmgmt:3", "wuauserv:3", "winebth:3"};
-        final String[] extraServices = {"nsiproxy:2", "MSIServer:3", "FontCache:3"};
+        final String[] services = {"BITS:3", "Eventlog:2", "HTTP:3", "LanmanServer:3", "NDIS:2", "PlugPlay:2", "scardsvr:3", "Schedule:3", "Spooler:3", "StiSvc:3", "TermService:3", "Winmgmt:3", "wuauserv:3", "winebth:3"};
+        final String[] extraServices = {"nsiproxy:2", "FontCache:3"};
+        // Windows Installer needs RPC (RpcSs) and its own service (MSIServer) to run .msi
+        // packages with custom actions: disabling them made .msi files fail to install.
+        // Both are demand-start (3): they cost nothing until a program actually uses them.
+        final String[] alwaysAvailableServices = {"RpcSs:3", "MSIServer:3"};
         File systemRegFile = new File(container.getRootDir(), ".wine/system.reg");
 
         try (WineRegistryEditor registryEditor = new WineRegistryEditor(systemRegFile)) {
@@ -240,6 +301,11 @@ public abstract class WineUtils {
                 String name = service.substring(0, service.indexOf(":"));
                 int value = startupSelection == Container.STARTUP_SELECTION_AGGRESSIVE ? SERVICE_DISABLED : Character.getNumericValue(service.charAt(service.length()-1));
                 registryEditor.setDwordValue(controlSetPath+"\\Services\\"+name, "Start", value);
+            }
+
+            for (String service : alwaysAvailableServices) {
+                String name = service.substring(0, service.indexOf(":"));
+                registryEditor.setDwordValue(controlSetPath+"\\Services\\"+name, "Start", Character.getNumericValue(service.charAt(service.length()-1)));
             }
         }
     }

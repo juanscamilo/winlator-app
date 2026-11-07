@@ -371,4 +371,5 @@
         <item>@string/upscaler_bilinear</item>
         <item>@string/upscaler_sgsr</item>
     </string-array>
+    <string name="windows_app_gestures">Windows App style touch gestures (hold = right click, hold and drag = select, two-finger scroll in all directions)</string>
 </resources>

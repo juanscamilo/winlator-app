@@ -308,4 +308,5 @@
     <string name="vsync_paced_compositing">Композиция по vsync (освобождает GPU для игры)</string>
     <string name="enable_adpf">Подсказки производительности Android (ADPF)</string>
     <string name="thermal_throttling_warning">Устройство перегревается: система ограничивает производительность.</string>
+    <string name="windows_app_gestures">Жесты в стиле Windows App (удержание = правый клик, удержание и перетаскивание = выделение, прокрутка двумя пальцами)</string>
 </resources>

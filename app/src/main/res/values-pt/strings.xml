@@ -308,4 +308,5 @@
     <string name="vsync_paced_compositing">Composição sincronizada ao vsync (libera GPU para o jogo)</string>
     <string name="enable_adpf">Dicas de desempenho do Android (ADPF: acelera o jogo quando os frames atrasam)</string>
     <string name="thermal_throttling_warning">O aparelho está superaquecendo: o sistema está limitando o desempenho.</string>
+    <string name="windows_app_gestures">Gestos estilo Windows App (segurar = botão direito, segurar e arrastar = selecionar, rolagem com dois dedos em todas as direções)</string>
 </resources>

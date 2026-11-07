@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.StateListDrawable;
+import android.view.HapticFeedbackConstants;
 import android.view.InputDevice;
 import android.view.MotionEvent;
 import android.view.View;
@@ -36,7 +37,17 @@ public class TouchpadView extends View implements View.OnCapturedPointerListener
     private Finger fingerPointerButtonLeft;
     private Finger fingerPointerButtonRight;
     private float scrollAccumY = 0;
+    private float scrollAccumX = 0;
     private boolean scrolling = false;
+    // Windows App (RDP client) style gestures: hold = right click, hold + drag = left-button
+    // drag (selection), two-finger pan = vertical and horizontal scroll.
+    private static final short LONG_PRESS_MILLISECONDS = 450;
+    private static final byte SCROLL_STEP = 60;
+    private static final byte SCROLL_AXIS_LOCK_DISTANCE = 12;
+    private boolean windowsAppGestures = true;
+    private byte scrollAxis = 0; // 0 = undecided, 1 = vertical, 2 = horizontal
+    private Finger longPressFinger;
+    private final Runnable longPressRunnable = this::onLongPress;
     private final XServer xServer;
     private Runnable fourFingersTapCallback;
     private final float[] xform = XForm.getInstance();
@@ -95,6 +106,8 @@ public class TouchpadView extends View implements View.OnCapturedPointerListener
         private int lastX;
         private int lastY;
         private final long touchTime;
+        private boolean longPressed = false;
+        private boolean dragging = false;
 
         public Finger(float x, float y) {
             float[] transformedPoint = XForm.transformPoint(xform, x, y);
@@ -148,9 +161,16 @@ public class TouchpadView extends View implements View.OnCapturedPointerListener
             case MotionEvent.ACTION_POINTER_DOWN:
                 if (event.isFromSource(InputDevice.SOURCE_MOUSE)) return true;
                 scrollAccumY = 0;
+                scrollAccumX = 0;
+                scrollAxis = 0;
                 scrolling = false;
                 fingers[pointerId] = new Finger(event.getX(actionIndex), event.getY(actionIndex));
                 numFingers++;
+                cancelHoldGesture();
+                if (windowsAppGestures && numFingers == 1) {
+                    longPressFinger = fingers[pointerId];
+                    postDelayed(longPressRunnable, LONG_PRESS_MILLISECONDS);
+                }
                 break;
             case MotionEvent.ACTION_MOVE:
                 if (event.isFromSource(InputDevice.SOURCE_MOUSE)) {
@@ -184,7 +204,11 @@ public class TouchpadView extends View implements View.OnCapturedPointerListener
                 }
                 break;
             case MotionEvent.ACTION_CANCEL:
-                for (byte i = 0; i < MAX_FINGERS; i++) fingers[i] = null;
+                cancelHoldGesture();
+                for (byte i = 0; i < MAX_FINGERS; i++) {
+                    if (fingers[i] != null && fingers[i].dragging) releasePointerButtonLeft(fingers[i]);
+                    fingers[i] = null;
+                }
                 numFingers = 0;
                 break;
         }
@@ -192,10 +216,30 @@ public class TouchpadView extends View implements View.OnCapturedPointerListener
         return true;
     }
 
+    private void cancelHoldGesture() {
+        removeCallbacks(longPressRunnable);
+        longPressFinger = null;
+    }
+
+    private void onLongPress() {
+        Finger finger = longPressFinger;
+        longPressFinger = null;
+        if (finger == null || numFingers != 1 || !isEnabled() || finger.travelDistance() >= MAX_TAP_TRAVEL_DISTANCE) return;
+        finger.longPressed = true;
+        if (moveCursorToTouchpoint) xServer.injectPointerMove(finger.x, finger.y);
+        performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
+    }
+
     private void handleFingerUp(Finger finger1) {
+        if (finger1 == longPressFinger) cancelHoldGesture();
+
         switch (numFingers) {
             case 1:
-                if (finger1.isTap()) {
+                if (finger1.longPressed && !finger1.dragging) {
+                    // Hold without moving = right click (Windows App style).
+                    pressPointerButtonRight(finger1);
+                }
+                else if (finger1.isTap()) {
                     if (moveCursorToTouchpoint) xServer.injectPointerMove(finger1.x, finger1.y);
                     pressPointerButtonLeft(finger1);
                 }
@@ -222,6 +266,14 @@ public class TouchpadView extends View implements View.OnCapturedPointerListener
         if (!isEnabled()) return;
         boolean skipPointerMove = false;
 
+        if (finger1 == longPressFinger && finger1.travelDistance() >= MAX_TAP_TRAVEL_DISTANCE) cancelHoldGesture();
+
+        // Hold, then drag = left-button drag (text/file selection, moving windows...).
+        if (numFingers == 1 && finger1.longPressed && !finger1.dragging && finger1.travelDistance() >= MAX_TAP_TRAVEL_DISTANCE) {
+            finger1.dragging = true;
+            pressPointerButtonLeft(finger1);
+        }
+
         Finger finger2 = numFingers == 2 ? findSecondFinger(finger1) : null;
         if (finger2 != null) {
             final float resolutionScale = 1000.0f / Math.min(xServer.screenInfo.width, xServer.screenInfo.height);
@@ -229,18 +281,49 @@ public class TouchpadView extends View implements View.OnCapturedPointerListener
 
             if (currDistance < MAX_TWO_FINGERS_SCROLL_DISTANCE) {
                 scrollAccumY += ((finger1.y + finger2.y) * 0.5f) - (finger1.lastY + finger2.lastY) * 0.5f;
-
-                if (scrollAccumY < -100) {
-                    xServer.injectPointerButtonPress(Pointer.Button.BUTTON_SCROLL_DOWN);
-                    xServer.injectPointerButtonRelease(Pointer.Button.BUTTON_SCROLL_DOWN);
-                    scrollAccumY = 0;
-                }
-                else if (scrollAccumY > 100) {
-                    xServer.injectPointerButtonPress(Pointer.Button.BUTTON_SCROLL_UP);
-                    xServer.injectPointerButtonRelease(Pointer.Button.BUTTON_SCROLL_UP);
-                    scrollAccumY = 0;
-                }
+                scrollAccumX += ((finger1.x + finger2.x) * 0.5f) - (finger1.lastX + finger2.lastX) * 0.5f;
                 scrolling = true;
+
+                if (!windowsAppGestures) {
+                    if (scrollAccumY < -100) {
+                        injectScroll(Pointer.Button.BUTTON_SCROLL_DOWN);
+                        scrollAccumY = 0;
+                    }
+                    else if (scrollAccumY > 100) {
+                        injectScroll(Pointer.Button.BUTTON_SCROLL_UP);
+                        scrollAccumY = 0;
+                    }
+                }
+                else {
+                    // Lock each pan to its dominant axis so vertical scrolling doesn't drift sideways.
+                    if (scrollAxis == 0 && Math.max(Math.abs(scrollAccumX), Math.abs(scrollAccumY)) >= SCROLL_AXIS_LOCK_DISTANCE) {
+                        scrollAxis = (byte)(Math.abs(scrollAccumX) > Math.abs(scrollAccumY) ? 2 : 1);
+                    }
+
+                    // Natural scrolling: content follows the fingers, like in the Windows App.
+                    if (scrollAxis == 1) {
+                        while (scrollAccumY <= -SCROLL_STEP) {
+                            injectScroll(Pointer.Button.BUTTON_SCROLL_DOWN);
+                            scrollAccumY += SCROLL_STEP;
+                        }
+                        while (scrollAccumY >= SCROLL_STEP) {
+                            injectScroll(Pointer.Button.BUTTON_SCROLL_UP);
+                            scrollAccumY -= SCROLL_STEP;
+                        }
+                        scrollAccumX = 0;
+                    }
+                    else if (scrollAxis == 2) {
+                        while (scrollAccumX <= -SCROLL_STEP) {
+                            injectScroll(Pointer.Button.BUTTON_SCROLL_CLICK_RIGHT);
+                            scrollAccumX += SCROLL_STEP;
+                        }
+                        while (scrollAccumX >= SCROLL_STEP) {
+                            injectScroll(Pointer.Button.BUTTON_SCROLL_CLICK_LEFT);
+                            scrollAccumX -= SCROLL_STEP;
+                        }
+                        scrollAccumY = 0;
+                    }
+                }
             }
             else if (currDistance >= MAX_TWO_FINGERS_SCROLL_DISTANCE && !xServer.pointer.isButtonPressed(Pointer.Button.BUTTON_LEFT) &&
                      finger2.travelDistance() < MAX_TAP_TRAVEL_DISTANCE) {
@@ -282,6 +365,20 @@ public class TouchpadView extends View implements View.OnCapturedPointerListener
                 mouseMoveFinger = null;
                 break;
         }
+    }
+
+    private void injectScroll(Pointer.Button button) {
+        xServer.injectPointerButtonPress(button);
+        xServer.injectPointerButtonRelease(button);
+    }
+
+    public boolean isWindowsAppGestures() {
+        return windowsAppGestures;
+    }
+
+    public void setWindowsAppGestures(boolean windowsAppGestures) {
+        this.windowsAppGestures = windowsAppGestures;
+        if (!windowsAppGestures) cancelHoldGesture();
     }
 
     private Finger findSecondFinger(Finger finger) {

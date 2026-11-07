@@ -86,6 +86,12 @@
                         android:text="@string/move_cursor_to_touchpoint" />
 
                     <CheckBox
+                        android:id="@+id/CBWindowsAppGestures"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/windows_app_gestures" />
+
+                    <CheckBox
                         android:id="@+id/CBCapturePointerOnExternalMouse"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"

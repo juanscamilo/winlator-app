@@ -132,3 +132,31 @@ BOX64_EXIT=1
 
 [*ndp48-x86-x64*]
 BOX64_EXIT=1
+
+# Chromium-based browsers (Chrome / Edge / Brave). Same dynarec settings box64 uses for
+# Steam's Chromium (steamwebhelper.exe). The Chromium sandbox does not work under Wine
+# (pages crash with "Aw, Snap!"), and fewer renderer processes means less code for Box64
+# to translate.
+[chrome.exe]
+BOX64_DYNAREC_STRONGMEM=1
+BOX64_DYNAREC_BIGBLOCK=3
+BOX64_DYNAREC_CALLRET=1
+BOX64_DYNAREC_SAFEFLAGS=0
+BOX64_DYNAREC_FASTROUND=0
+BOX64_ENV=WINEARGS=--no-sandbox --disable-gpu-sandbox --renderer-process-limit=2 --disable-background-networking --no-first-run --no-default-browser-check
+
+[msedge.exe]
+BOX64_DYNAREC_STRONGMEM=1
+BOX64_DYNAREC_BIGBLOCK=3
+BOX64_DYNAREC_CALLRET=1
+BOX64_DYNAREC_SAFEFLAGS=0
+BOX64_DYNAREC_FASTROUND=0
+BOX64_ENV=WINEARGS=--no-sandbox --disable-gpu-sandbox --renderer-process-limit=2 --disable-background-networking --no-first-run --no-default-browser-check
+
+[brave.exe]
+BOX64_DYNAREC_STRONGMEM=1
+BOX64_DYNAREC_BIGBLOCK=3
+BOX64_DYNAREC_CALLRET=1
+BOX64_DYNAREC_SAFEFLAGS=0
+BOX64_DYNAREC_FASTROUND=0
+BOX64_ENV=WINEARGS=--no-sandbox --disable-gpu-sandbox --renderer-process-limit=2 --disable-background-networking --no-first-run --no-default-browser-check

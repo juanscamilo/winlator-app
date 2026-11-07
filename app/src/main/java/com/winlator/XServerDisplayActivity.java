@@ -460,6 +460,7 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
         boolean wineprefixWasUpdated = WineUtils.isWineprefixWasUpdated(container);
         if (!container.getExtra("appVersion").equals(appVersion) || !container.getExtra("rfsVersion").equals(rfsVersion) || wineprefixWasUpdated) {
             applyGeneralPatches(container);
+            WineUtils.applyBrowserPolicies(container);
             container.putExtra("appVersion", appVersion);
             container.putExtra("rfsVersion", rfsVersion);
             containerDataChanged = true;
@@ -483,8 +484,10 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
 
         WineStartMenuCreator.create(this, container);
         WineUtils.createDosdevicesSymlinks(container, true);
+        WineUtils.applyBrowserTweaks(container);
 
-        String startupSelection = String.valueOf(container.getStartupSelection());
+        // "-2": re-apply once on existing containers (RpcSs/MSIServer must stay available for .msi files).
+        String startupSelection = container.getStartupSelection()+"-2";
         if (!startupSelection.equals(container.getExtra("startupSelection")) || wineprefixWasUpdated) {
             WineUtils.changeServicesStatus(container, container.getStartupSelection());
             container.putExtra("startupSelection", startupSelection);
@@ -613,6 +616,7 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
         touchpadView = new TouchpadView(this, xServer, capturePointerOnExternalMouse);
         touchpadView.setSensitivity(globalCursorSpeed);
         touchpadView.setMoveCursorToTouchpoint(preferences.getBoolean("move_cursor_to_touchpoint", false));
+        touchpadView.setWindowsAppGestures(preferences.getBoolean("windows_app_gestures", true));
         touchpadView.setFourFingersTapCallback(() -> {
             if (!drawerLayout.isDrawerOpen(GravityCompat.START)) drawerLayout.openDrawer(GravityCompat.START);
         });
