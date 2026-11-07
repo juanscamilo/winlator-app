@@ -12,8 +12,53 @@ on:
         type: choice
         options: [ sm8550, generic ]
 
+env:
+  BOX64_REF: v0.4.5-1
+  BOX64_VERSION: 0.4.5
+  TARGET_SOC: ${{ github.event.inputs.target_soc || 'sm8550' }}
+
 jobs:
+  # Box64 compiled natively on an ARM64 runner (Ubuntu 24.04 = glibc 2.39, the same
+  # glibc as Winlator's rootfs), tuned for the Snapdragon 8 Gen 2 (-DSD8G2: ARMv9-A
+  # without SVE, which Qualcomm does not expose).
+  box64:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 60
+    steps:
+      - name: Build Box64
+        run: |
+          sudo apt-get install -y --no-install-recommends cmake zstd python3
+          git clone --depth 1 --branch "$BOX64_REF" https://github.com/ptitSeb/box64
+          case "$TARGET_SOC" in
+            sm8550) CPU_OPT="-DSD8G2=ON" ;;
+            *)      CPU_OPT="-DARM64=ON" ;;
+          esac
+          ROOTFS_LIB=/data/data/com.winlator/files/rootfs/lib
+          cmake -S box64 -B box64/build $CPU_OPT -DARM_DYNAREC=ON -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DCMAKE_EXE_LINKER_FLAGS="-Wl,--dynamic-linker=$ROOTFS_LIB/ld-linux-aarch64.so.1 -Wl,-rpath,$ROOTFS_LIB"
+          cmake --build box64/build -j"$(nproc)"
+
+      - name: Check and package Box64
+        run: |
+          BIN=box64/build/box64
+          readelf -l "$BIN" | grep "Requesting program interpreter: /data/data/com.winlator/files/rootfs/lib/ld-linux-aarch64.so.1"
+          readelf -d "$BIN" | grep RUNPATH
+          # Winlator's rootfs ships glibc 2.39: refuse to package a binary needing anything newer.
+          if objdump -T "$BIN" | grep -oE "GLIBC_2\.[0-9]+" | sort -uV | tail -1 | awk -F. '$2 > 39 {exit 1}'; then echo "glibc OK"; else echo "needs glibc > 2.39"; exit 1; fi
+          ./"$BIN" --version || true
+          mkdir -p pkg/usr/local/bin
+          cp "$BIN" pkg/usr/local/bin/box64
+          chmod 644 pkg/usr/local/bin/box64
+          tar --owner=0 --group=0 --numeric-owner -C pkg -cf - . | zstd -19 -T0 -o "box64-$BOX64_VERSION.tzst"
+
+      - uses: actions/upload-artifact@v5
+        with:
+          name: box64-${{ env.TARGET_SOC }}
+          path: box64-*.tzst
+          if-no-files-found: error
+
   build:
+    needs: box64
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -32,15 +77,22 @@ jobs:
           "$SDKMANAGER" --install "ndk;28.2.13676358" "cmake;3.22.1" "platforms;android-36" "build-tools;36.0.0"
           echo "sdk.dir=$ANDROID_HOME" > local.properties
 
+      # Replace the generic Box64 shipped in the repo with the SoC-tuned build.
+      - uses: actions/download-artifact@v5
+        with:
+          name: box64-${{ env.TARGET_SOC }}
+          path: app/src/main/assets/box64
+
       - uses: gradle/actions/setup-gradle@v4
 
       - name: Build release APK
         run: |
+          ls -la app/src/main/assets/box64
           chmod +x gradlew
-          ./gradlew --no-daemon assembleRelease -Pwinlator.targetSoc=${{ github.event.inputs.target_soc || 'sm8550' }}
+          ./gradlew --no-daemon assembleRelease -Pwinlator.targetSoc=$TARGET_SOC
 
       - uses: actions/upload-artifact@v5
         with:
-          name: winlator-${{ github.event.inputs.target_soc || 'sm8550' }}-${{ github.sha }}
+          name: winlator-${{ env.TARGET_SOC }}-${{ github.sha }}
           path: app/build/outputs/apk/release/*.apk
           if-no-files-found: error

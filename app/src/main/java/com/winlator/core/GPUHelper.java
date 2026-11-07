@@ -141,6 +141,23 @@ public abstract class GPUHelper {
     private static final Pattern ADRENO_PATTERN = Pattern.compile("adreno[^678]*([678][0-9]{2})", Pattern.CASE_INSENSITIVE);
     private static volatile short adrenoModelId = -1;
 
+    private static Context appContext;
+
+    public static void init(Context context) {
+        appContext = context.getApplicationContext();
+    }
+
+    /** Adreno model id from the cached GPU info, without creating an EGL context (0 if unknown). */
+    public static short getCachedAdrenoModelId() {
+        if (adrenoModelId != -1) return adrenoModelId;
+        if (appContext == null) return 0;
+        String renderer = PreferenceManager.getDefaultSharedPreferences(appContext).getString("gpu_renderer", "");
+        Matcher matcher = ADRENO_PATTERN.matcher(renderer);
+        short modelId = (short)(matcher.find() ? Integer.parseInt(matcher.group(1)) : 0);
+        if (modelId != 0) adrenoModelId = modelId;
+        return modelId;
+    }
+
     public static short getAdrenoModelId(Context context) {
         if (adrenoModelId != -1) return adrenoModelId;
         Matcher matcher = ADRENO_PATTERN.matcher(glGetRenderer(context));

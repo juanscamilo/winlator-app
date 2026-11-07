@@ -19,6 +19,7 @@ public class WinlatorApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        com.winlator.core.GPUHelper.init(this);
         final Thread.UncaughtExceptionHandler defaultHandler = Thread.getDefaultUncaughtExceptionHandler();
         Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
             try {

@@ -5,7 +5,8 @@ import com.winlator.container.GraphicsDrivers;
 import java.util.Locale;
 
 public abstract class DefaultVersion {
-    public static final String BOX64 = "0.4.4";
+    public static final String BOX64 = "0.4.5";
+    public static final String LEGACY_BOX64 = "0.4.4";
     public static final String TURNIP = "26.2.0";
     public static final String VORTEK = "2.1";
     public static final String ZINK = "22.2.5";
@@ -13,21 +14,31 @@ public abstract class DefaultVersion {
     public static final String GLADIO = "1.1";
     public static final String D7VK = "1.11";
     public static final String D8VK = "1.0";
-    public static final String VKD3D = "2.14.1";
+    public static final String VKD3D = "3.1";
+    public static final String LEGACY_VKD3D = "2.14.1";
     public static final String WINED3D = WineInfo.MAIN_WINE_VERSION;
     public static final String CNC_DDRAW = "6.6";
     public static final String SOUNDFONT = "SONiVOX-EAS-GM-Wavetable";
     public static final String MINOR_DXVK = "1.10.3";
     public static final String MAJOR_DXVK = "2.4.1";
+    // DXVK 3.x: new dxbc-spirv shader compiler, descriptor heaps; requires Vulkan 1.4.
+    public static final String LATEST_DXVK = "3.1.1";
 
     public static String DXVK() {
         return DXVK(null);
     }
 
     public static String DXVK(String vulkanDriver) {
-        int vkApiVersion = 0;
-        if (vulkanDriver != null && vulkanDriver.equals(GraphicsDrivers.VORTEK)) vkApiVersion = GPUHelper.vkGetApiVersion();
-        return vulkanDriver == null || vulkanDriver.equals(GraphicsDrivers.TURNIP) || vkApiVersion >= GPUHelper.vkMakeVersion(1, 3, 0) ? MAJOR_DXVK : MINOR_DXVK;
+        if (vulkanDriver == null) return MAJOR_DXVK;
+
+        if (vulkanDriver.equals(GraphicsDrivers.TURNIP)) {
+            // Turnip exposes Vulkan 1.4 on Adreno 7xx (e.g. Adreno 740 / Snapdragon 8 Gen 2).
+            return GPUHelper.getCachedAdrenoModelId() >= 730 ? LATEST_DXVK : MAJOR_DXVK;
+        }
+
+        int vkApiVersion = vulkanDriver.equals(GraphicsDrivers.VORTEK) ? GPUHelper.vkGetApiVersion() : 0;
+        if (vkApiVersion >= GPUHelper.vkMakeVersion(1, 4, 0)) return LATEST_DXVK;
+        return vkApiVersion >= GPUHelper.vkMakeVersion(1, 3, 0) ? MAJOR_DXVK : MINOR_DXVK;
     }
 
     public static String valueOf(String name) {

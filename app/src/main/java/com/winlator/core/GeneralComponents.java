@@ -122,16 +122,16 @@ public abstract class GeneralComponents {
 
         switch (type) {
             case BOX64:
-                items = new String[]{DefaultVersion.BOX64};
+                items = new String[]{DefaultVersion.LEGACY_BOX64, DefaultVersion.BOX64};
                 break;
             case TURNIP:
                 items = new String[]{DefaultVersion.TURNIP};
                 break;
             case DXVK:
-                items = new String[]{DefaultVersion.MINOR_DXVK, DefaultVersion.MAJOR_DXVK};
+                items = new String[]{DefaultVersion.MINOR_DXVK, DefaultVersion.MAJOR_DXVK, DefaultVersion.LATEST_DXVK};
                 break;
             case VKD3D:
-                items = new String[]{DefaultVersion.VKD3D};
+                items = new String[]{DefaultVersion.LEGACY_VKD3D, DefaultVersion.VKD3D};
                 break;
             case WINED3D:
                 items = new String[]{DefaultVersion.WINED3D};
