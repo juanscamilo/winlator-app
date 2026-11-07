@@ -4,7 +4,13 @@ BOX64_ENV1=WINEDLLOVERRIDES=gameoverlayrenderer,gameoverlayrenderer64,gameoverla
 BOX64_ENV2=WINPREEXEC=winpreexec
 
 [steamwebhelper.exe]
+# Steam's UI is Chromium (CEF), rendered in software here: dynarec settings from box64's
+# own rcfile for steamwebhelper.exe make it much faster than STRONGMEM alone.
 BOX64_DYNAREC_STRONGMEM=1
+BOX64_DYNAREC_BIGBLOCK=3
+BOX64_DYNAREC_CALLRET=1
+BOX64_DYNAREC_SAFEFLAGS=0
+BOX64_DYNAREC_FASTROUND=0
 BOX64_ENV=WINEENV=WINE_D3D_CONFIG=renderer=gdi
 BOX64_ENV1=WINEDLLOVERRIDES=d3d8,d3d9,d3d10,d3d10_1,d3d10core,d3d11,ddraw,dxgi=b
 
@@ -160,3 +166,8 @@ BOX64_DYNAREC_CALLRET=1
 BOX64_DYNAREC_SAFEFLAGS=0
 BOX64_DYNAREC_FASTROUND=0
 BOX64_ENV=WINEARGS=--no-sandbox --disable-gpu-sandbox --renderer-process-limit=2 --disable-background-networking --no-first-run --no-default-browser-check
+
+# Firefox: the crash reporter starts an extra helper process on every launch (expensive
+# under Box64) and its dbghelp-based handler itself crashes under Wine.
+[firefox.exe]
+BOX64_ENV=WINEENV=MOZ_CRASHREPORTER_DISABLE=1

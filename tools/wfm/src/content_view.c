@@ -519,7 +519,9 @@ static DWORD WINAPI searchTask(void* param) {
             
             if (numItems >= 10000) break;
             
-            if (node->type == TYPE_DIR && stackSize < maxStackSize) {
+            // Also descend into drives, so searching from "Computer" (the view WFM opens
+            // with) finds files instead of always returning 0 items.
+            if ((node->type == TYPE_DIR || node->type == TYPE_DRIVE) && stackSize < maxStackSize) {
                 buildChildNodes(node, false);
                 if (node->children) stack[stackSize++] = node->children;
             }

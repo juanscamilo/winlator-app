@@ -103,6 +103,11 @@ public abstract class WineUtils {
             registryEditor.setStringValue("Software\\Winlator\\WFM\\ContextMenu\\7-Zip", "Extract to Folder", "Z:\\opt\\apps\\7-Zip\\7zG.exe x \"%FILE%\" -r -o\"%DIR%\\%BASENAME%\" -y");
             registryEditor.setStringValue("Software\\Wine\\AddonsURL", null, "https://raw.githubusercontent.com/brunodev85/winlator/main/wine_addons/");
             registryEditor.setStringValue("Software\\Wine\\Drivers", "Graphics", "x11");
+            // When a program crashes, Wine's debugger used to attach and wait on a crash
+            // dialog. Background processes then blocked whoever was waiting for them (e.g. the
+            // Firefox installer hung at its last step on a crashing helper). Now a crashing
+            // process just terminates (the backtrace still goes to the log).
+            registryEditor.setDwordValue("Software\\Wine\\WineDbg", "ShowCrashDialog", 0);
         }
     }
 
