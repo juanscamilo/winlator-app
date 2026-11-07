@@ -301,4 +301,11 @@
     <string name="present_mode">Режим презентации</string>
     <string name="enable_box64_dynacache">Включить DynaCache Box64 (постоянный JIT-кэш, быстрая загрузка)</string>
     <string name="prefer_high_refresh_rate">Предпочитать максимальную частоту обновления экрана (напр. 120 Гц)</string>
+    <string name="upscaler">Апскейлер</string>
+    <string name="upscaler_hint">Уменьшите размер экрана контейнера (напр. 960x540), и SGSR растянет изображение до экрана: меньше пикселей — выше FPS.</string>
+    <string name="upscaler_bilinear">Билинейный (по умолчанию)</string>
+    <string name="upscaler_sgsr">Snapdragon GSR (чёткое масштабирование)</string>
+    <string name="vsync_paced_compositing">Композиция по vsync (освобождает GPU для игры)</string>
+    <string name="enable_adpf">Подсказки производительности Android (ADPF)</string>
+    <string name="thermal_throttling_warning">Устройство перегревается: система ограничивает производительность.</string>
 </resources>

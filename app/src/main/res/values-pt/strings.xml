@@ -301,4 +301,11 @@
     <string name="present_mode">Modo de Apresentação</string>
     <string name="enable_box64_dynacache">Ativar DynaCache do Box64 (cache JIT persistente, carregamento mais rápido)</string>
     <string name="prefer_high_refresh_rate">Preferir a maior taxa de atualização da tela (ex.: 120Hz)</string>
+    <string name="upscaler">Upscaler</string>
+    <string name="upscaler_hint">Reduza o tamanho da tela do container (ex.: 960x540) e deixe o SGSR ampliar para a tela: menos pixels renderizados, mais FPS.</string>
+    <string name="upscaler_bilinear">Bilinear (padrão)</string>
+    <string name="upscaler_sgsr">Snapdragon GSR (upscaling nítido)</string>
+    <string name="vsync_paced_compositing">Composição sincronizada ao vsync (libera GPU para o jogo)</string>
+    <string name="enable_adpf">Dicas de desempenho do Android (ADPF: acelera o jogo quando os frames atrasam)</string>
+    <string name="thermal_throttling_warning">O aparelho está superaquecendo: o sistema está limitando o desempenho.</string>
 </resources>

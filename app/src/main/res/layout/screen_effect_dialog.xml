@@ -118,6 +118,26 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/enable_crt_shader" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/upscaler" />
+
+            <Spinner
+                style="@style/ComboBox"
+                android:id="@+id/SUpscaler"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:entries="@array/upscaler_entries" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="12sp"
+                android:alpha="0.7"
+                android:text="@string/upscaler_hint" />
         </LinearLayout>
     </LinearLayout>
 </LinearLayout>

@@ -151,6 +151,12 @@ public class SettingsFragment extends Fragment {
         final CheckBox cbPreferHighRefreshRate = view.findViewById(R.id.CBPreferHighRefreshRate);
         cbPreferHighRefreshRate.setChecked(preferences.getBoolean("prefer_high_refresh_rate", true));
 
+        final CheckBox cbVsyncPacedCompositing = view.findViewById(R.id.CBVsyncPacedCompositing);
+        cbVsyncPacedCompositing.setChecked(preferences.getBoolean("vsync_paced_compositing", true));
+
+        final CheckBox cbEnableADPF = view.findViewById(R.id.CBEnableADPF);
+        cbEnableADPF.setChecked(preferences.getBoolean("enable_adpf", true));
+
         final CheckBox cbEnableBackgroundWakelock = view.findViewById(R.id.CBEnableBackgroundWakelock);
         cbEnableBackgroundWakelock.setChecked(preferences.getBoolean("enable_background_wakelock", false));
 
@@ -247,6 +253,8 @@ public class SettingsFragment extends Fragment {
             editor.putBoolean("enable_background_wakelock", cbEnableBackgroundWakelock.isChecked());
             editor.putBoolean("enable_box64_dynacache", cbEnableBox64DynaCache.isChecked());
             editor.putBoolean("prefer_high_refresh_rate", cbPreferHighRefreshRate.isChecked());
+            editor.putBoolean("vsync_paced_compositing", cbVsyncPacedCompositing.isChecked());
+            editor.putBoolean("enable_adpf", cbEnableADPF.isChecked());
             editor.putBoolean("save_mem_on_run_from_steam", cbSaveMemOnRunFromSteam.isChecked());
             putGamepadPlayerConfigs(view, editor);
 

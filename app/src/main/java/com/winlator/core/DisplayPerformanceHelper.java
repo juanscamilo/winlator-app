@@ -1,6 +1,10 @@
 package com.winlator.core;
 
 import android.app.Activity;
+import android.content.Context;
+import android.hardware.display.DisplayManager;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.Build;
 import android.view.Display;
 import android.view.Surface;
@@ -56,5 +60,42 @@ public abstract class DisplayPerformanceHelper {
             else surface.setFrameRate(frameRate, Surface.FRAME_RATE_COMPATIBILITY_DEFAULT);
         }
         catch (Exception e) {}
+    }
+
+    /**
+     * Keeps {@link DisplayClock} in sync with the refresh rate the panel is actually running at
+     * (the mode switch requested above is applied asynchronously). Returns the listener so it
+     * can be unregistered with {@link #stopTrackingRefreshRate}.
+     */
+    public static DisplayManager.DisplayListener trackRefreshRate(Activity activity) {
+        final DisplayManager displayManager = (DisplayManager)activity.getSystemService(Context.DISPLAY_SERVICE);
+        final Display display = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R ? activity.getDisplay() : activity.getWindowManager().getDefaultDisplay();
+        if (displayManager == null || display == null) return null;
+
+        final int displayId = display.getDisplayId();
+        DisplayClock.setRefreshRate(display.getRefreshRate());
+
+        DisplayManager.DisplayListener listener = new DisplayManager.DisplayListener() {
+            @Override
+            public void onDisplayAdded(int id) {}
+
+            @Override
+            public void onDisplayRemoved(int id) {}
+
+            @Override
+            public void onDisplayChanged(int id) {
+                if (id != displayId) return;
+                Display changed = displayManager.getDisplay(id);
+                if (changed != null) DisplayClock.setRefreshRate(changed.getRefreshRate());
+            }
+        };
+        displayManager.registerDisplayListener(listener, new Handler(Looper.getMainLooper()));
+        return listener;
+    }
+
+    public static void stopTrackingRefreshRate(Activity activity, DisplayManager.DisplayListener listener) {
+        if (listener == null) return;
+        DisplayManager displayManager = (DisplayManager)activity.getSystemService(Context.DISPLAY_SERVICE);
+        if (displayManager != null) displayManager.unregisterDisplayListener(listener);
     }
 }

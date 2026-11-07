@@ -4,6 +4,7 @@ import static com.winlator.xserver.XClientRequestHandler.RESPONSE_CODE_SUCCESS;
 
 import android.util.SparseArray;
 
+import com.winlator.core.DisplayClock;
 import com.winlator.core.GPUHelper;
 import com.winlator.renderer.GPUImage;
 import com.winlator.renderer.Texture;
@@ -103,7 +104,8 @@ public class PresentExtension extends Extension implements WindowManager.OnWindo
     }
 
     private void sendIdleNotifyScheduled(final Window window, final Pixmap pixmap, final int serial, final int idleFence) {
-        final long frameTime = 1000000000L / 60;
+        // Pace FIFO (vsync) presentation to the real panel refresh rate instead of a fixed 60Hz.
+        final long frameTime = DisplayClock.getFrameIntervalNanos();
         long now = System.nanoTime();
 
         long lastIdleTime = (long)window.getTag("lastIdleTime", now);
@@ -172,7 +174,7 @@ public class PresentExtension extends Extension implements WindowManager.OnWindo
         Drawable content = window.getContent();
         if (pixmap != null && content.visual.depth != pixmap.drawable.visual.depth) throw new BadMatch();
 
-        final int frameTime = 1000000 / 60;
+        final long frameTime = Math.max(1, DisplayClock.getFrameIntervalNanos() / 1000L);
         long ust = System.nanoTime() / 1000L;
         long msc = ust / frameTime;
 

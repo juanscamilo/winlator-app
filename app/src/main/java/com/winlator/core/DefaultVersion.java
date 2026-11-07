@@ -36,8 +36,9 @@ public abstract class DefaultVersion {
             return GPUHelper.getCachedAdrenoModelId() >= 730 ? LATEST_DXVK : MAJOR_DXVK;
         }
 
+        // Vortek exposes at most Vulkan 1.3 to the guest (VortekRendererComponent.VK_MAX_VERSION),
+        // so DXVK 3.x (Vulkan 1.4) is never the default there.
         int vkApiVersion = vulkanDriver.equals(GraphicsDrivers.VORTEK) ? GPUHelper.vkGetApiVersion() : 0;
-        if (vkApiVersion >= GPUHelper.vkMakeVersion(1, 4, 0)) return LATEST_DXVK;
         return vkApiVersion >= GPUHelper.vkMakeVersion(1, 3, 0) ? MAJOR_DXVK : MINOR_DXVK;
     }
 

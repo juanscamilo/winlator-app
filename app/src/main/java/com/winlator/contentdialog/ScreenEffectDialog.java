@@ -18,6 +18,7 @@ import com.winlator.renderer.GLRenderer;
 import com.winlator.renderer.effects.CRTEffect;
 import com.winlator.renderer.effects.ColorEffect;
 import com.winlator.renderer.effects.FXAAEffect;
+import com.winlator.renderer.upscaler.Upscaler;
 import com.winlator.widget.SeekBar;
 
 import java.util.ArrayList;
@@ -32,6 +33,7 @@ public class ScreenEffectDialog extends ContentDialog {
     private final SeekBar sbGamma;
     private final CheckBox cbEnableFXAA;
     private final CheckBox cbEnableCRTShader;
+    private final Spinner sUpscaler;
 
     public ScreenEffectDialog(XServerDisplayActivity activity) {
         super(activity, R.layout.screen_effect_dialog);
@@ -53,6 +55,8 @@ public class ScreenEffectDialog extends ContentDialog {
         sbGamma = findViewById(R.id.SBGamma);
         cbEnableFXAA = findViewById(R.id.CBEnableFXAA);
         cbEnableCRTShader = findViewById(R.id.CBEnableCRTShader);
+        sUpscaler = findViewById(R.id.SUpscaler);
+        sUpscaler.setSelection(renderer.effectComposer.getUpscaler().ordinal());
 
         sbBrightness.setValue(colorEffect.getBrightness() * 100);
         sbContrast.setValue(colorEffect.getContrast() * 100);
@@ -110,6 +114,10 @@ public class ScreenEffectDialog extends ContentDialog {
             }
             else if (crtEffect != null) renderer.effectComposer.removeEffect(crtEffect);
 
+            Upscaler upscaler = Upscaler.values()[Math.max(0, sUpscaler.getSelectedItemPosition())];
+            renderer.effectComposer.setUpscaler(upscaler);
+            preferences.edit().putString("screen_upscaler", upscaler.name()).apply();
+
             saveProfile(sProfile);
         });
 
@@ -125,6 +133,7 @@ public class ScreenEffectDialog extends ContentDialog {
 
         cbEnableFXAA.setChecked(false);
         cbEnableCRTShader.setChecked(false);
+        sUpscaler.setSelection(Upscaler.BILINEAR.ordinal());
     }
 
     private void saveProfile(Spinner sProfile) {
@@ -139,6 +148,7 @@ public class ScreenEffectDialog extends ContentDialog {
             settings.put("gamma", sbGamma.getValue());
             settings.put("fxaa", cbEnableFXAA.isChecked());
             settings.put("crt_shader", cbEnableCRTShader.isChecked());
+            settings.put("upscaler", Upscaler.values()[Math.max(0, sUpscaler.getSelectedItemPosition())].name());
 
             for (String profile : oldProfiles) {
                 String name = profile.split(":")[0];
@@ -164,6 +174,7 @@ public class ScreenEffectDialog extends ContentDialog {
                     sbGamma.setValue(settings.getFloat("gamma", 1.0f));
                     cbEnableFXAA.setChecked(settings.getBoolean("fxaa", false));
                     cbEnableCRTShader.setChecked(settings.getBoolean("crt_shader", false));
+                    sUpscaler.setSelection(Upscaler.fromString(settings.get("upscaler", Upscaler.BILINEAR.name())).ordinal());
                 }
                 break;
             }

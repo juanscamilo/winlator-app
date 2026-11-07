@@ -6,10 +6,14 @@ import android.graphics.BitmapFactory;
 import android.opengl.EGL14;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.view.Choreographer;
 
 import androidx.core.graphics.ColorUtils;
 
 import com.winlator.R;
+import com.winlator.core.AdpfManager;
 import com.winlator.core.Bitmask;
 import com.winlator.core.Callback;
 import com.winlator.core.GPUHelper;
@@ -35,6 +39,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -63,6 +68,18 @@ public class GLRenderer implements GLSurfaceView.Renderer, WindowManager.OnWindo
     protected short surfaceWidth;
     protected short surfaceHeight;
     public final EffectComposer effectComposer = new EffectComposer(this);
+
+    // Vsync-paced compositing: guest frames can arrive far faster than the panel refreshes
+    // (e.g. 2000 FPS). Instead of recompositing on every one of them, which steals GPU time
+    // from the game itself, coalesce redraw requests and composite once per display vsync.
+    private static HandlerThread vsyncThread;
+    private static Handler vsyncHandler;
+    private volatile boolean vsyncPacing = true;
+    private final AtomicBoolean renderPending = new AtomicBoolean(false);
+    private final Choreographer.FrameCallback vsyncFrameCallback = this::onVsyncFrame;
+    private final Runnable postVsyncFrameCallback = () -> Choreographer.getInstance().postFrameCallback(vsyncFrameCallback);
+    private volatile AdpfManager adpfManager;
+    private final int[] outputViewport = new int[4];
 
     public GLRenderer(XServerView xServerView, XServer xServer) {
         this.xServerView = xServerView;
@@ -95,6 +112,9 @@ public class GLRenderer implements GLSurfaceView.Renderer, WindowManager.OnWindo
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
         EGL14.eglSwapInterval(EGL14.eglGetCurrentDisplay(), 0);
+
+        AdpfManager adpfManager = this.adpfManager;
+        if (adpfManager != null) adpfManager.onRenderThreadStarted();
     }
 
     @Override
@@ -107,16 +127,20 @@ public class GLRenderer implements GLSurfaceView.Renderer, WindowManager.OnWindo
 
     @Override
     public void onDrawFrame(GL10 gl) {
+        long startTime = System.nanoTime();
         if (toggleFullscreen) {
             fullscreen = !fullscreen;
             toggleFullscreen = false;
             viewportNeedsUpdate = true;
         }
 
-        if (effectComposer.hasEffects()) {
+        if (effectComposer.isActive()) {
             effectComposer.render();
         }
         else drawFrame();
+
+        AdpfManager adpfManager = this.adpfManager;
+        if (adpfManager != null) adpfManager.reportRenderWork(System.nanoTime() - startTime);
     }
 
     protected void drawFrame() {
@@ -128,6 +152,36 @@ public class GLRenderer implements GLSurfaceView.Renderer, WindowManager.OnWindo
             viewportNeedsUpdate = false;
         }
 
+        drawScene();
+    }
+
+    /** Output rectangle (x, y, width, height) of the X screen inside the surface. */
+    int[] getOutputViewport() {
+        if (fullscreen) {
+            outputViewport[0] = 0;
+            outputViewport[1] = 0;
+            outputViewport[2] = surfaceWidth;
+            outputViewport[3] = surfaceHeight;
+        }
+        else {
+            outputViewport[0] = viewTransformation.viewOffsetX;
+            outputViewport[1] = viewTransformation.viewOffsetY;
+            outputViewport[2] = viewTransformation.viewWidth;
+            outputViewport[3] = viewTransformation.viewHeight;
+        }
+        return outputViewport;
+    }
+
+    int getScreenWidth() {
+        return xServer.screenInfo.width;
+    }
+
+    int getScreenHeight() {
+        return xServer.screenInfo.height;
+    }
+
+    /** Draws windows and cursor into the currently bound framebuffer/viewport. */
+    void drawScene() {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
 
         float pointerX = 0;
@@ -170,7 +224,9 @@ public class GLRenderer implements GLSurfaceView.Renderer, WindowManager.OnWindo
 
     @Override
     public void onUpdateWindowContent(Window window) {
-        xServerView.requestRender();
+        AdpfManager adpfManager = this.adpfManager;
+        if (adpfManager != null) adpfManager.onGuestFrame(window.id);
+        requestRenderOnVsync();
     }
 
     @Override
@@ -189,7 +245,50 @@ public class GLRenderer implements GLSurfaceView.Renderer, WindowManager.OnWindo
 
     @Override
     public void onPointerMove(short x, short y) {
+        requestRenderOnVsync();
+    }
+
+    /** Coalesces redraw requests so the compositor runs at most once per display vsync. */
+    public void requestRenderOnVsync() {
+        if (!vsyncPacing) {
+            xServerView.requestRender();
+            return;
+        }
+
+        if (renderPending.compareAndSet(false, true)) {
+            Handler handler = getVsyncHandler();
+            if (handler == null || !handler.post(postVsyncFrameCallback)) {
+                renderPending.set(false);
+                xServerView.requestRender();
+            }
+        }
+    }
+
+    private void onVsyncFrame(long frameTimeNanos) {
+        renderPending.set(false);
         xServerView.requestRender();
+    }
+
+    private static synchronized Handler getVsyncHandler() {
+        if (vsyncHandler == null) {
+            vsyncThread = new HandlerThread("VsyncPacer", android.os.Process.THREAD_PRIORITY_DISPLAY);
+            vsyncThread.start();
+            vsyncHandler = new Handler(vsyncThread.getLooper());
+        }
+        return vsyncHandler;
+    }
+
+    public void setVsyncPacing(boolean vsyncPacing) {
+        this.vsyncPacing = vsyncPacing;
+        renderPending.set(false);
+    }
+
+    public boolean isVsyncPacing() {
+        return vsyncPacing;
+    }
+
+    public void setAdpfManager(AdpfManager adpfManager) {
+        this.adpfManager = adpfManager;
     }
 
     private void renderCursorDrawable(Drawable drawable, int x, int y) {

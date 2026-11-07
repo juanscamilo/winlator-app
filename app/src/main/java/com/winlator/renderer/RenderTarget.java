@@ -31,6 +31,15 @@ public class RenderTarget extends Texture {
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
     }
 
+    @Override
+    public void destroy() {
+        super.destroy();
+        if (framebuffer != 0) {
+            GLES20.glDeleteFramebuffers(1, new int[]{framebuffer}, 0);
+            framebuffer = 0;
+        }
+    }
+
     public int getFramebuffer() {
         return framebuffer;
     }

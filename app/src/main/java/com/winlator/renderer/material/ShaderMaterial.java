@@ -17,14 +17,18 @@ public abstract class ShaderMaterial {
     }
 
     protected static int compileShaders(String vertexShader, String fragmentShader) {
+        return compileShaders(vertexShader, fragmentShader, "300 es");
+    }
+
+    protected static int compileShaders(String vertexShader, String fragmentShader, String glslVersion) {
         int beginIndex = vertexShader.indexOf("void main() {");
         vertexShader = vertexShader.substring(0, beginIndex) +
             "vec2 applyXForm(vec2 p, float xform[6]) {\n" +
                 "return vec2(xform[0] * p.x + xform[2] * p.y + xform[4], xform[1] * p.x + xform[3] * p.y + xform[5]);\n" +
             "}\n" + vertexShader.substring(beginIndex);
 
-        vertexShader = "#version 300 es\n" + vertexShader;
-        fragmentShader = "#version 300 es\n" + fragmentShader;
+        vertexShader = "#version "+glslVersion+"\n" + vertexShader;
+        fragmentShader = "#version "+glslVersion+"\n" + fragmentShader;
 
         int programId = GLES20.glCreateProgram();
         int[] compiled = new int[1];
@@ -51,6 +55,14 @@ public abstract class ShaderMaterial {
 
         GLES20.glLinkProgram(programId);
 
+        int[] linked = new int[1];
+        GLES20.glGetProgramiv(programId, GLES20.GL_LINK_STATUS, linked, 0);
+        if (linked[0] == 0) {
+            String log = GLES20.glGetProgramInfoLog(programId);
+            GLES20.glDeleteProgram(programId);
+            throw new RuntimeException("Could not link program: \n" + log);
+        }
+
         GLES20.glDeleteShader(vertexShaderId);
         GLES20.glDeleteShader(fragmentShaderId);
         return programId;
@@ -64,8 +76,13 @@ public abstract class ShaderMaterial {
         return "";
     }
 
+    /** GLSL ES version of this material's shaders (e.g. "310 es" for textureGather). */
+    protected String getGLSLVersion() {
+        return "300 es";
+    }
+
     public void use() {
-        if (programId == 0) programId = compileShaders(getVertexShader(), getFragmentShader());
+        if (programId == 0) programId = compileShaders(getVertexShader(), getFragmentShader(), getGLSLVersion());
         GLES20.glUseProgram(programId);
     }
 

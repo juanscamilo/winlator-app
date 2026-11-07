@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.hardware.display.DisplayManager;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -44,6 +45,7 @@ import com.winlator.contentdialog.TurnipConfigDialog;
 import com.winlator.contentdialog.VKD3DConfigDialog;
 import com.winlator.contentdialog.VirGLConfigDialog;
 import com.winlator.contentdialog.WineD3DConfigDialog;
+import com.winlator.core.AdpfManager;
 import com.winlator.core.AppUtils;
 import com.winlator.core.DisplayPerformanceHelper;
 import com.winlator.core.DefaultVersion;
@@ -68,6 +70,7 @@ import com.winlator.inputcontrols.ExternalController;
 import com.winlator.inputcontrols.InputControlsManager;
 import com.winlator.math.Mathf;
 import com.winlator.renderer.GLRenderer;
+import com.winlator.renderer.upscaler.Upscaler;
 import com.winlator.services.ForegroundService;
 import com.winlator.widget.FrameRating;
 import com.winlator.widget.InputControlsView;
@@ -129,6 +132,8 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
     private EnvVars overrideEnvVars;
     private ClipboardManager clipboardManager;
     private SharedPreferences preferences;
+    private AdpfManager adpfManager;
+    private DisplayManager.DisplayListener refreshRateListener;
     private final WinHandler winHandler = new WinHandler(this);
     private float globalCursorSpeed = 1.0f;
     private boolean capturePointerOnExternalMouse = true;
@@ -145,6 +150,7 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
         AppUtils.hideSystemUI(this);
         AppUtils.keepScreenOn(this);
         if (DisplayPerformanceHelper.isHighRefreshRateEnabled(this)) DisplayPerformanceHelper.requestHighestRefreshRate(this);
+        refreshRateListener = DisplayPerformanceHelper.trackRefreshRate(this);
         setContentView(R.layout.xserver_display_activity);
         ForegroundService.startSession(this);
 
@@ -343,6 +349,8 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
 
     @Override
     protected void onDestroy() {
+        if (adpfManager != null) adpfManager.stop();
+        DisplayPerformanceHelper.stopTrackingRefreshRate(this, refreshRateListener);
         winHandler.stop();
         if (environment != null) environment.stopEnvironmentComponents();
         ForegroundService.stopSession(this);
@@ -589,6 +597,13 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
         renderer.setCursorColor(preferences.getInt("cursor_color", 0xffffff));
         renderer.setCursorScale(preferences.getFloat("cursor_scale", 1.0f));
         renderer.setForceWindowsFullscreen(shortcut != null && shortcut.getExtra("forceFullscreen", "0").equals("1"));
+        renderer.setVsyncPacing(preferences.getBoolean("vsync_paced_compositing", true));
+        renderer.effectComposer.setUpscaler(Upscaler.fromString(preferences.getString("screen_upscaler", Upscaler.BILINEAR.name())));
+        if (preferences.getBoolean("enable_adpf", true)) {
+            adpfManager = new AdpfManager(this);
+            renderer.setAdpfManager(adpfManager);
+            adpfManager.start();
+        }
 
         xServer.setRenderer(renderer);
         rootView.addView(xServerView);
