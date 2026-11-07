@@ -45,6 +45,7 @@ import com.winlator.contentdialog.VKD3DConfigDialog;
 import com.winlator.contentdialog.VirGLConfigDialog;
 import com.winlator.contentdialog.WineD3DConfigDialog;
 import com.winlator.core.AppUtils;
+import com.winlator.core.DisplayPerformanceHelper;
 import com.winlator.core.DefaultVersion;
 import com.winlator.core.EnvVars;
 import com.winlator.core.FileUtils;
@@ -143,6 +144,7 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
         super.onCreate(savedInstanceState);
         AppUtils.hideSystemUI(this);
         AppUtils.keepScreenOn(this);
+        if (DisplayPerformanceHelper.isHighRefreshRateEnabled(this)) DisplayPerformanceHelper.requestHighestRefreshRate(this);
         setContentView(R.layout.xserver_display_activity);
         ForegroundService.startSession(this);
 

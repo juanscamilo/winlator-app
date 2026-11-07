@@ -405,6 +405,19 @@
                         </LinearLayout>
                     </LinearLayout>
 
+                    <CheckBox
+                        android:id="@+id/CBEnableBox64DynaCache"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/enable_box64_dynacache" />
+
+                    <View style="@style/FieldSeparator" />
+
+                    <CheckBox
+                        android:id="@+id/CBPreferHighRefreshRate"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/prefer_high_refresh_rate" />
                     <View style="@style/FieldSeparator" />
 
                     <CheckBox

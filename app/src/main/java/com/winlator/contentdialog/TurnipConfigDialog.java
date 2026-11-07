@@ -48,7 +48,9 @@ public class TurnipConfigDialog extends ContentDialog {
 
     private static boolean isForceSYSMEM(Context context) {
         short modelId = GPUHelper.getAdrenoModelId(context);
-        return modelId >= 700 && modelId != 710 && modelId != 720 && modelId != 732;
+        // Adreno 740 (Snapdragon 8 Gen 2 / Galaxy S23) is fully supported by Turnip's tiled
+        // GMEM renderer, which is considerably faster than SYSMEM on this GPU.
+        return modelId >= 700 && modelId != 710 && modelId != 720 && modelId != 732 && modelId != 740;
     }
 
     private static boolean isForceGMEM(Context context) {
@@ -65,13 +67,26 @@ public class TurnipConfigDialog extends ContentDialog {
         String presentMode = GPUHelper.VkPresentMode.values()[presentModeIdx].value();
         envVars.put("MESA_VK_WSI_PRESENT_MODE", presentMode);
 
+        // Accumulate the TU_DEBUG flags instead of overwriting them: previously the
+        // "sysmem"/"gmem" flag was discarded by the final "deck_emu" assignment.
         String tuDebug = envVars.get("TU_DEBUG");
-        if (isForceSYSMEM(context) && !tuDebug.contains("sysmem")) {
-            envVars.put("TU_DEBUG", (!tuDebug.isEmpty() ? tuDebug+"," : "")+"sysmem");
+        if (tuDebug == null) tuDebug = "";
+        if (isForceSYSMEM(context) && !hasTuDebugFlag(tuDebug, "sysmem")) {
+            tuDebug = appendTuDebugFlag(tuDebug, "sysmem");
         }
-        else if (isForceGMEM(context) && !tuDebug.contains("gmem")) {
-            envVars.put("TU_DEBUG", (!tuDebug.isEmpty() ? tuDebug+"," : "")+"gmem");
+        else if (isForceGMEM(context) && !hasTuDebugFlag(tuDebug, "gmem")) {
+            tuDebug = appendTuDebugFlag(tuDebug, "gmem");
         }
-        envVars.put("TU_DEBUG", (!tuDebug.isEmpty() ? tuDebug+"," : "")+"deck_emu");
+        if (!hasTuDebugFlag(tuDebug, "deck_emu")) tuDebug = appendTuDebugFlag(tuDebug, "deck_emu");
+        envVars.put("TU_DEBUG", tuDebug);
+    }
+
+    private static boolean hasTuDebugFlag(String tuDebug, String flag) {
+        for (String value : tuDebug.split(",")) if (value.trim().equals(flag)) return true;
+        return false;
+    }
+
+    private static String appendTuDebugFlag(String tuDebug, String flag) {
+        return (!tuDebug.isEmpty() ? tuDebug+"," : "")+flag;
     }
 }

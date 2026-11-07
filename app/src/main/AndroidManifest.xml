@@ -24,6 +24,10 @@
         android:allowAudioPlaybackCapture="true"
         android:label="@string/app_name">
 
+        <meta-data
+            android:name="android.game_mode_config"
+            android:resource="@xml/game_mode_config" />
+
         <activity android:name="com.winlator.MainActivity"
             android:theme="@style/AppThemeDark"
             android:exported="true"

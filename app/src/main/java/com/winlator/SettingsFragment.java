@@ -145,6 +145,12 @@ public class SettingsFragment extends Fragment {
         final CheckBox cbUseAndroidClipboardOnWine = view.findViewById(R.id.CBUseAndroidClipboardOnWine);
         cbUseAndroidClipboardOnWine.setChecked(preferences.getBoolean("use_android_clipboard_on_wine", false));
 
+        final CheckBox cbEnableBox64DynaCache = view.findViewById(R.id.CBEnableBox64DynaCache);
+        cbEnableBox64DynaCache.setChecked(preferences.getBoolean("enable_box64_dynacache", true));
+
+        final CheckBox cbPreferHighRefreshRate = view.findViewById(R.id.CBPreferHighRefreshRate);
+        cbPreferHighRefreshRate.setChecked(preferences.getBoolean("prefer_high_refresh_rate", true));
+
         final CheckBox cbEnableBackgroundWakelock = view.findViewById(R.id.CBEnableBackgroundWakelock);
         cbEnableBackgroundWakelock.setChecked(preferences.getBoolean("enable_background_wakelock", false));
 
@@ -239,6 +245,8 @@ public class SettingsFragment extends Fragment {
             editor.putBoolean("use_android_clipboard_on_wine", cbUseAndroidClipboardOnWine.isChecked());
             editor.putBoolean("enable_background_protection", cbEnableBackgroundProtection.isChecked());
             editor.putBoolean("enable_background_wakelock", cbEnableBackgroundWakelock.isChecked());
+            editor.putBoolean("enable_box64_dynacache", cbEnableBox64DynaCache.isChecked());
+            editor.putBoolean("prefer_high_refresh_rate", cbPreferHighRefreshRate.isChecked());
             editor.putBoolean("save_mem_on_run_from_steam", cbSaveMemOnRunFromSteam.isChecked());
             putGamepadPlayerConfigs(view, editor);
 

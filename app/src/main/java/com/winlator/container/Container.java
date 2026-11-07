@@ -425,10 +425,53 @@ public class Container {
         catch (JSONException e) {}
     }
 
+    /**
+     * Default CPU affinity for new containers.
+     *
+     * On big.LITTLE SoCs with three or more clusters (e.g. Snapdragon 8 Gen 2:
+     * 3x Cortex-A510 @ 2.0GHz, 2x A710 + 2x A715 @ 2.8GHz, 1x X3 @ 3.36GHz) the
+     * in-order efficiency cores are several times slower than the others and
+     * cause stutter when box64/wine threads get scheduled on them, so they are
+     * excluded by default. The user can still pick any CPU in the container settings.
+     */
     public static String getFallbackCPUList() {
-        String cpuList = "";
         int numProcessors = Runtime.getRuntime().availableProcessors();
-        for (int i = 0; i < numProcessors; i++) cpuList += (!cpuList.isEmpty() ? "," : "")+i;
-        return cpuList;
+        int[] maxFreqs = new int[numProcessors];
+        int minFreq = Integer.MAX_VALUE;
+        java.util.TreeSet<Integer> clusters = new java.util.TreeSet<>();
+
+        for (int i = 0; i < numProcessors; i++) {
+            maxFreqs[i] = readCPUMaxFreq(i);
+            if (maxFreqs[i] > 0) {
+                minFreq = Math.min(minFreq, maxFreqs[i]);
+                clusters.add(maxFreqs[i]);
+            }
+        }
+
+        boolean skipLittleCores = false;
+        if (clusters.size() >= 3 && numProcessors >= 8) {
+            int fastCores = 0;
+            for (int freq : maxFreqs) if (freq > minFreq) fastCores++;
+            skipLittleCores = fastCores >= 4;
+        }
+
+        StringBuilder cpuList = new StringBuilder();
+        for (int i = 0; i < numProcessors; i++) {
+            if (skipLittleCores && maxFreqs[i] > 0 && maxFreqs[i] == minFreq) continue;
+            if (cpuList.length() > 0) cpuList.append(',');
+            cpuList.append(i);
+        }
+        return cpuList.toString();
+    }
+
+    private static int readCPUMaxFreq(int cpu) {
+        File file = new File("/sys/devices/system/cpu/cpu"+cpu+"/cpufreq/cpuinfo_max_freq");
+        try {
+            String value = FileUtils.readString(file);
+            return value != null ? Integer.parseInt(value.trim()) : 0;
+        }
+        catch (Exception e) {
+            return 0;
+        }
     }
 }

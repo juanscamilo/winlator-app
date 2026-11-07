@@ -1,0 +1,27 @@
+# Baseline Profile: ART compiles these classes ahead-of-time at install time
+# (via androidx.profileinstaller), so the X server, renderer and input paths run
+# at full speed from the first frame instead of waiting for the JIT to warm up.
+HSPLcom/winlator/xserver/**;->**(**)**
+Lcom/winlator/xserver/**;
+HSPLcom/winlator/xconnector/**;->**(**)**
+Lcom/winlator/xconnector/**;
+HSPLcom/winlator/renderer/**;->**(**)**
+Lcom/winlator/renderer/**;
+HSPLcom/winlator/widget/XServerView;->**(**)**
+HSPLcom/winlator/widget/TouchpadView;->**(**)**
+HSPLcom/winlator/widget/InputControlsView;->**(**)**
+Lcom/winlator/widget/**;
+HSPLcom/winlator/inputcontrols/**;->**(**)**
+Lcom/winlator/inputcontrols/**;
+HSPLcom/winlator/winhandler/**;->**(**)**
+Lcom/winlator/winhandler/**;
+HSPLcom/winlator/alsaserver/**;->**(**)**
+Lcom/winlator/alsaserver/**;
+HSPLcom/winlator/sysvshm/**;->**(**)**
+Lcom/winlator/sysvshm/**;
+HSPLcom/winlator/math/**;->**(**)**
+Lcom/winlator/math/**;
+HSPLcom/winlator/core/**;->**(**)**
+Lcom/winlator/core/**;
+HSPLcom/winlator/XServerDisplayActivity;->**(**)**
+Lcom/winlator/XServerDisplayActivity;

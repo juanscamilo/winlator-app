@@ -143,7 +143,16 @@ public class GuestProgramLauncherComponent extends EnvironmentComponent {
         envVars.put("BOX64_NOBANNER", box64Logs >= 1 ? "0" : "1");
         envVars.put("BOX64_DYNAREC", "1");
         envVars.put("BOX64_UNITYPLAYER", "0");
-        envVars.put("BOX64_DYNACACHE", "0");
+        // DynaCache (box64 >= 0.3.8) stores translated code on disk so the dynarec does not
+        // have to recompile the same x86_64 blocks on every launch: faster loading and less
+        // in-game stutter. Older box64 builds simply ignore these variables.
+        if (preferences.getBoolean("enable_box64_dynacache", true)) {
+            File dynaCacheDir = new File(rootFS.getRootDir(), RootFS.HOME_PATH+"/.cache/box64");
+            if (!dynaCacheDir.isDirectory()) dynaCacheDir.mkdirs();
+            envVars.put("BOX64_DYNACACHE", "1");
+            envVars.put("BOX64_DYNACACHE_FOLDER", dynaCacheDir.getPath());
+        }
+        else envVars.put("BOX64_DYNACACHE", "0");
 
         if (box64Logs >= 1) {
             envVars.put("BOX64_LOG", "1");

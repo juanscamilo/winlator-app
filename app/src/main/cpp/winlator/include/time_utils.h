@@ -1,14 +1,18 @@
 #ifndef WINLATOR_TIME_UTILS_H
 #define WINLATOR_TIME_UTILS_H
 
+#include <stdint.h>
 #include <sys/time.h>
+#include <time.h>
 
 #define NSEC_PER_SEC 1000000000UL
 
 static inline uint64_t nanoTime(void) {
     struct timespec time;
-    clock_gettime(CLOCK_REALTIME, &time);
-    return time.tv_sec * NSEC_PER_SEC + time.tv_nsec;
+    // Monotonic clock: nanoTime() measures elapsed time (e.g. GL timer queries) and must
+    // not jump when the wall clock is adjusted by NTP/network time.
+    clock_gettime(CLOCK_MONOTONIC, &time);
+    return (uint64_t)time.tv_sec * NSEC_PER_SEC + time.tv_nsec;
 }
 
 static inline uint64_t currentTimeMillis(void) {

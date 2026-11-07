@@ -299,4 +299,6 @@
     <string name="enable_background_wakelock">Ativar wakelock quando o dispositivo está bloqueado</string>
     <string name="save_mem_on_run_from_steam">Economize memória ao executar a partir do Steam</string>
     <string name="present_mode">Modo de Apresentação</string>
+    <string name="enable_box64_dynacache">Ativar DynaCache do Box64 (cache JIT persistente, carregamento mais rápido)</string>
+    <string name="prefer_high_refresh_rate">Preferir a maior taxa de atualização da tela (ex.: 120Hz)</string>
 </resources>

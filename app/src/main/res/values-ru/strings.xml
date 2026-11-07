@@ -299,4 +299,6 @@
     <string name="enable_background_wakelock">Включить wakelock, когда устройство заблокировано</string>
     <string name="save_mem_on_run_from_steam">Экономия памяти при запуске из Steam</string>
     <string name="present_mode">Режим презентации</string>
+    <string name="enable_box64_dynacache">Включить DynaCache Box64 (постоянный JIT-кэш, быстрая загрузка)</string>
+    <string name="prefer_high_refresh_rate">Предпочитать максимальную частоту обновления экрана (напр. 120 Гц)</string>
 </resources>
