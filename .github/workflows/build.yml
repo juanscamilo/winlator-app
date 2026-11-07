@@ -62,7 +62,7 @@ jobs:
 
   # Winlator File Manager (tools/wfm) cross-compiled with MinGW-w64.
   wfm:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v5
