@@ -48,6 +48,9 @@ jobs:
           ./"$BIN" --version || true
           mkdir -p pkg/usr/local/bin
           cp "$BIN" pkg/usr/local/bin/box64
+          # Drop DWARF debug info (not loaded at runtime): smaller APK and faster extraction.
+          strip --strip-debug pkg/usr/local/bin/box64
+          ls -la pkg/usr/local/bin/box64
           chmod 644 pkg/usr/local/bin/box64
           tar --owner=0 --group=0 --numeric-owner -C pkg -cf - . | zstd -19 -T0 -o "box64-$BOX64_VERSION.tzst"
 
