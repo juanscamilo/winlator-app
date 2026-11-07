@@ -17,3 +17,32 @@
 #}
 
 -dontobfuscate
+# zstd-jni: its native code reads/writes Java fields (srcPos, dstPos, ...) and calls
+# methods via JNI. Without this, R8 strips them and decompressing the rootfs
+# (first launch, right after granting storage permission) crashes.
+-keep class com.github.luben.zstd.** { *; }
+-dontwarn com.github.luben.zstd.**
+
+# Members called from Winlator's own native code via GetMethodID.
+-keepclassmembers class com.winlator.** {
+    void clearWindowContent(int);
+    void flushFrontbuffer(int, int);
+    long getGLXContextPtr(int, int);
+    long getWindowHardwareBuffer(int, boolean);
+    int getWindowHeight(int);
+    short[] getWindowSize(int);
+    int getWindowWidth(int);
+    *** handleConnectionShutdown(...);
+    *** handleExistingConnection(...);
+    *** handleNewConnection(...);
+    void killAllConnections();
+    void killConnection(int);
+    void setNativeHandle(int);
+    void setStride(short);
+    *** updateWindowContent(...);
+}
+
+# Keep every class that declares native methods intact (names + members).
+-keepclasseswithmembers,includedescriptorclasses class * {
+    native <methods>;
+}
