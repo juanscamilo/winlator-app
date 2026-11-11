@@ -313,8 +313,26 @@
     <string name="diagnostic_report">Диагностический отчёт</string>
     <string name="diagnostic_report_saved">Отчёт сохранён:</string>
     <string name="diagnostic_report_failed">Не удалось сохранить отчёт.</string>
-    <string name="steamcmd">SteamCMD (Steam без клиента)</string>
     <string name="steamcmd_download_failed">Не удалось скачать SteamCMD.</string>
     <string name="steamcmd_hint">SteamCMD: введите \"login имя\", затем \"app_update APPID validate\". Игры: C:\\steamcmd\\steamapps\\common.</string>
     <string name="chromium_gpu_acceleration">GPU-ускорение Chromium (экспериментально)</string>
+    <string name="steam_account">Аккаунт Steam</string>
+    <string name="steam_username">Имя пользователя</string>
+    <string name="steam_password">Пароль (только в первый раз)</string>
+    <string name="steam_login_hint">При первой загрузке введите пароль; Steam попросит подтвердить вход в мобильном приложении Steam (или ввести код Steam Guard в окне).</string>
+    <string name="steam_installed_games">Установленные игры</string>
+    <string name="steam_no_games">Игры ещё не установлены.</string>
+    <string name="steam_play">Играть</string>
+    <string name="steam_back">Назад</string>
+    <string name="steam_no_executable">Исполняемый файл не найден.</string>
+    <string name="steam_download_game">Скачать игру</string>
+    <string name="steam_search_hint">Название игры</string>
+    <string name="steam_search">Поиск</string>
+    <string name="steam_download">Скачать</string>
+    <string name="steam_no_results">Ничего не найдено.</string>
+    <string name="steam_search_failed">Ошибка поиска.</string>
+    <string name="steam_enter_username">Сначала введите имя пользователя Steam.</string>
+    <string name="steam_downloading">Загрузка:</string>
+    <string name="steam_open_console">Открыть консоль SteamCMD</string>
+    <string name="steamcmd">Steam (игры без клиента)</string>
 </resources>

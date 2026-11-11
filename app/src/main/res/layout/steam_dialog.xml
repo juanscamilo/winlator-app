@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="420dp"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/steam_account" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <EditText
+                style="@style/EditText"
+                android:id="@+id/ETSteamUser"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:hint="@string/steam_username"
+                android:inputType="textNoSuggestions"
+                android:singleLine="true" />
+
+            <EditText
+                style="@style/EditText"
+                android:id="@+id/ETSteamPassword"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_marginLeft="6dp"
+                android:hint="@string/steam_password"
+                android:inputType="textPassword"
+                android:singleLine="true" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="12sp"
+            android:alpha="0.7"
+            android:text="@string/steam_login_hint" />
+
+        <View style="@style/FieldSeparator" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/steam_installed_games" />
+
+        <LinearLayout
+            android:id="@+id/LLSteamInstalled"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
+        <View style="@style/FieldSeparator" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/steam_download_game" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <EditText
+                style="@style/EditText"
+                android:id="@+id/ETSteamSearch"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:hint="@string/steam_search_hint"
+                android:inputType="textNoSuggestions"
+                android:imeOptions="actionSearch"
+                android:singleLine="true" />
+
+            <Button
+                style="@style/ButtonNeutral"
+                android:id="@+id/BTSteamSearch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="6dp"
+                android:text="@string/steam_search" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/LLSteamResults"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
+        <View style="@style/FieldSeparator" />
+
+        <Button
+            style="@style/ButtonNeutral"
+            android:id="@+id/BTSteamConsole"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/steam_open_console" />
+    </LinearLayout>
+</ScrollView>

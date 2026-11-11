@@ -376,8 +376,26 @@
     <string name="diagnostic_report">Diagnostic report</string>
     <string name="diagnostic_report_saved">Report saved:</string>
     <string name="diagnostic_report_failed">Could not save the report.</string>
-    <string name="steamcmd">SteamCMD (Steam without the client)</string>
     <string name="steamcmd_download_failed">Could not download SteamCMD. Check your connection.</string>
     <string name="steamcmd_hint">SteamCMD: type \"login your_user\", then \"app_update APPID validate\". Games go to C:\\steamcmd\\steamapps\\common.</string>
     <string name="chromium_gpu_acceleration">Chromium GPU acceleration (experimental)</string>
+    <string name="steam_account">Steam account</string>
+    <string name="steam_username">Username</string>
+    <string name="steam_password">Password (first time only)</string>
+    <string name="steam_login_hint">First download: enter your password; Steam will ask you to approve the sign-in in the Steam mobile app (or to type the Steam Guard code in the window). Afterwards the username is enough.</string>
+    <string name="steam_installed_games">Installed games</string>
+    <string name="steam_no_games">No games installed yet.</string>
+    <string name="steam_play">Play</string>
+    <string name="steam_back">Back</string>
+    <string name="steam_no_executable">No executable found.</string>
+    <string name="steam_download_game">Download a game</string>
+    <string name="steam_search_hint">Game name</string>
+    <string name="steam_search">Search</string>
+    <string name="steam_download">Download</string>
+    <string name="steam_no_results">No results.</string>
+    <string name="steam_search_failed">Search failed. Check your connection.</string>
+    <string name="steam_enter_username">Enter your Steam username first.</string>
+    <string name="steam_downloading">Downloading:</string>
+    <string name="steam_open_console">Open SteamCMD console</string>
+    <string name="steamcmd">Steam (games without the client)</string>
 </resources>

@@ -41,6 +41,7 @@ import com.winlator.contentdialog.ContentDialog;
 import com.winlator.contentdialog.DXVKConfigDialog;
 import com.winlator.contentdialog.DebugDialog;
 import com.winlator.contentdialog.ScreenEffectDialog;
+import com.winlator.contentdialog.SteamDialog;
 import com.winlator.contentdialog.TurnipConfigDialog;
 import com.winlator.contentdialog.VKD3DConfigDialog;
 import com.winlator.contentdialog.VirGLConfigDialog;
@@ -51,7 +52,6 @@ import com.winlator.core.ChromiumInstaller;
 import com.winlator.core.DiagnosticReport;
 import com.winlator.core.GuestLogBuffer;
 import com.winlator.core.PerfStats;
-import com.winlator.core.SteamCmdLauncher;
 import com.winlator.core.DisplayPerformanceHelper;
 import com.winlator.core.DefaultVersion;
 import com.winlator.core.EnvVars;
@@ -441,7 +441,7 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
                 break;
             case R.id.menu_item_steamcmd:
                 drawerLayout.closeDrawers();
-                SteamCmdLauncher.launch(this);
+                (new SteamDialog(this)).show();
                 break;
             case R.id.menu_item_touchpad_help:
                 showTouchpadHelpDialog();
