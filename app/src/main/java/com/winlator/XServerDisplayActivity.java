@@ -48,6 +48,10 @@ import com.winlator.contentdialog.WineD3DConfigDialog;
 import com.winlator.core.AdpfManager;
 import com.winlator.core.AppUtils;
 import com.winlator.core.ChromiumInstaller;
+import com.winlator.core.DiagnosticReport;
+import com.winlator.core.GuestLogBuffer;
+import com.winlator.core.PerfStats;
+import com.winlator.core.SteamCmdLauncher;
 import com.winlator.core.DisplayPerformanceHelper;
 import com.winlator.core.DefaultVersion;
 import com.winlator.core.EnvVars;
@@ -134,6 +138,7 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
     private ClipboardManager clipboardManager;
     private SharedPreferences preferences;
     private AdpfManager adpfManager;
+    private final GuestLogBuffer guestLogBuffer = new GuestLogBuffer();
     private DisplayManager.DisplayListener refreshRateListener;
     private final WinHandler winHandler = new WinHandler(this);
     private float globalCursorSpeed = 1.0f;
@@ -166,6 +171,9 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
 
         NavigationView navigationView = findViewById(R.id.NavigationView);
         ProcessHelper.removeAllDebugCallbacks();
+        // Always keep the last lines of Wine/Box64 output for the one-tap diagnostic report.
+        ProcessHelper.addDebugCallback(guestLogBuffer);
+        PerfStats.reset();
         boolean enableLogs = preferences.getBoolean("enable_wine_debug", false) || preferences.getInt("box64_logs", 0) >= 1;
         if (enableLogs) ProcessHelper.addDebugCallback(debugDialog = new DebugDialog(this));
         Menu menu = navigationView.getMenu();
@@ -423,6 +431,17 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
             case R.id.menu_item_logs:
                 debugDialog.show();
                 drawerLayout.closeDrawers();
+                break;
+            case R.id.menu_item_diagnostic_report:
+                drawerLayout.closeDrawers();
+                Executors.newSingleThreadExecutor().execute(() -> {
+                    final File reportFile = DiagnosticReport.generate(this, guestLogBuffer);
+                    runOnUiThread(() -> AppUtils.showToast(this, reportFile != null ? getString(R.string.diagnostic_report_saved)+" "+reportFile.getPath() : getString(R.string.diagnostic_report_failed)));
+                });
+                break;
+            case R.id.menu_item_steamcmd:
+                drawerLayout.closeDrawers();
+                SteamCmdLauncher.launch(this);
                 break;
             case R.id.menu_item_touchpad_help:
                 showTouchpadHelpDialog();

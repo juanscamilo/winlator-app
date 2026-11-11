@@ -310,4 +310,11 @@
     <string name="thermal_throttling_warning">O aparelho está superaquecendo: o sistema está limitando o desempenho.</string>
     <string name="windows_app_gestures">Gestos estilo Windows App (segurar = botão direito, segurar e arrastar = selecionar, rolagem com dois dedos em todas as direções)</string>
     <string name="phantom_process_notice">O Android limita os processos em segundo plano dos apps, o que pode fechar partes de programas Windows que usam muitos processos (Steam, navegadores, launchers): eles ficam rodando sem janela.\n\nPara corrigir, ative \"Desativar restrições de processos secundários\" nas Opções do desenvolvedor (se elas estiverem ocultas: Configurações > Sobre o telefone > Informações do software > toque 7 vezes em \"Número de compilação\").\n\nAbrir as Opções do desenvolvedor agora?</string>
+    <string name="diagnostic_report">Relatório de diagnóstico</string>
+    <string name="diagnostic_report_saved">Relatório salvo:</string>
+    <string name="diagnostic_report_failed">Não foi possível salvar o relatório.</string>
+    <string name="steamcmd">SteamCMD (Steam sem o cliente)</string>
+    <string name="steamcmd_download_failed">Não foi possível baixar o SteamCMD. Verifique a conexão.</string>
+    <string name="steamcmd_hint">SteamCMD: digite \"login seu_usuario\" e depois \"app_update APPID validate\". Os jogos ficam em C:\\steamcmd\\steamapps\\common.</string>
+    <string name="chromium_gpu_acceleration">Aceleração de GPU no Chromium (experimental)</string>
 </resources>

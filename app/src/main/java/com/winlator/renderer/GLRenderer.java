@@ -18,6 +18,7 @@ import com.winlator.core.Bitmask;
 import com.winlator.core.Callback;
 import com.winlator.core.GPUHelper;
 import com.winlator.core.ImageUtils;
+import com.winlator.core.PerfStats;
 import com.winlator.math.Mathf;
 import com.winlator.math.XForm;
 import com.winlator.renderer.material.CursorMaterial;
@@ -139,8 +140,10 @@ public class GLRenderer implements GLSurfaceView.Renderer, WindowManager.OnWindo
         }
         else drawFrame();
 
+        long renderTime = System.nanoTime() - startTime;
+        PerfStats.onCompositorFrame(renderTime);
         AdpfManager adpfManager = this.adpfManager;
-        if (adpfManager != null) adpfManager.reportRenderWork(System.nanoTime() - startTime);
+        if (adpfManager != null) adpfManager.reportRenderWork(renderTime);
     }
 
     protected void drawFrame() {
@@ -224,6 +227,7 @@ public class GLRenderer implements GLSurfaceView.Renderer, WindowManager.OnWindo
 
     @Override
     public void onUpdateWindowContent(Window window) {
+        PerfStats.onGuestFrame();
         AdpfManager adpfManager = this.adpfManager;
         if (adpfManager != null) adpfManager.onGuestFrame(window.id);
         requestRenderOnVsync();

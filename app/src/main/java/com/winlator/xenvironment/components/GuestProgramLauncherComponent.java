@@ -130,7 +130,22 @@ public class GuestProgramLauncherComponent extends EnvironmentComponent {
     private void copyDefaultBox64RCFile() {
         Context context = environment.getContext();
         RootFS rootFS = environment.getRootFS();
-        FileUtils.copy(context, "box64/default.box64rc", new File(rootFS.getRootDir(), "/etc/config.box64rc"));
+        File rcFile = new File(rootFS.getRootDir(), "/etc/config.box64rc");
+        FileUtils.copy(context, "box64/default.box64rc", rcFile);
+
+        // Experimental: let the bundled Chromium use the GPU (ANGLE D3D11 -> DXVK) instead
+        // of software rendering.
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        if (preferences.getBoolean("chromium_gpu_acceleration", false)) {
+            String content = FileUtils.readString(rcFile);
+            int start = content != null ? content.indexOf("[chrome.exe]") : -1;
+            if (start != -1) {
+                int end = content.indexOf("\n[", start + 1);
+                if (end == -1) end = content.length();
+                String block = content.substring(start, end).replace("--disable-gpu --disable-gpu-sandbox", "--disable-gpu-sandbox --use-angle=d3d11 --ignore-gpu-blocklist");
+                FileUtils.writeString(rcFile, content.substring(0, start)+block+content.substring(end));
+            }
+        }
     }
 
     private void addBox64EnvVars(EnvVars envVars) {

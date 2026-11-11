@@ -310,4 +310,11 @@
     <string name="thermal_throttling_warning">Устройство перегревается: система ограничивает производительность.</string>
     <string name="windows_app_gestures">Жесты в стиле Windows App (удержание = правый клик, удержание и перетаскивание = выделение, прокрутка двумя пальцами)</string>
     <string name="phantom_process_notice">Android ограничивает фоновые процессы приложений, из-за чего части Windows-программ с множеством процессов (Steam, браузеры, лаунчеры) могут закрываться и работать без окна.\n\nЧтобы исправить, включите \"Отключить ограничения дочерних процессов\" в настройках для разработчиков.\n\nОткрыть настройки для разработчиков?</string>
+    <string name="diagnostic_report">Диагностический отчёт</string>
+    <string name="diagnostic_report_saved">Отчёт сохранён:</string>
+    <string name="diagnostic_report_failed">Не удалось сохранить отчёт.</string>
+    <string name="steamcmd">SteamCMD (Steam без клиента)</string>
+    <string name="steamcmd_download_failed">Не удалось скачать SteamCMD.</string>
+    <string name="steamcmd_hint">SteamCMD: введите \"login имя\", затем \"app_update APPID validate\". Игры: C:\\steamcmd\\steamapps\\common.</string>
+    <string name="chromium_gpu_acceleration">GPU-ускорение Chromium (экспериментально)</string>
 </resources>

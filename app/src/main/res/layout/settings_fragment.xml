@@ -436,6 +436,12 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/enable_adpf" />
+
+                    <CheckBox
+                        android:id="@+id/CBChromiumGPU"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/chromium_gpu_acceleration" />
                     <View style="@style/FieldSeparator" />
 
                     <CheckBox

@@ -157,6 +157,9 @@ public class SettingsFragment extends Fragment {
         final CheckBox cbVsyncPacedCompositing = view.findViewById(R.id.CBVsyncPacedCompositing);
         cbVsyncPacedCompositing.setChecked(preferences.getBoolean("vsync_paced_compositing", true));
 
+        final CheckBox cbChromiumGPU = view.findViewById(R.id.CBChromiumGPU);
+        cbChromiumGPU.setChecked(preferences.getBoolean("chromium_gpu_acceleration", false));
+
         final CheckBox cbEnableADPF = view.findViewById(R.id.CBEnableADPF);
         cbEnableADPF.setChecked(preferences.getBoolean("enable_adpf", true));
 
@@ -259,6 +262,7 @@ public class SettingsFragment extends Fragment {
             editor.putBoolean("prefer_high_refresh_rate", cbPreferHighRefreshRate.isChecked());
             editor.putBoolean("vsync_paced_compositing", cbVsyncPacedCompositing.isChecked());
             editor.putBoolean("enable_adpf", cbEnableADPF.isChecked());
+            editor.putBoolean("chromium_gpu_acceleration", cbChromiumGPU.isChecked());
             editor.putBoolean("save_mem_on_run_from_steam", cbSaveMemOnRunFromSteam.isChecked());
             putGamepadPlayerConfigs(view, editor);
 
