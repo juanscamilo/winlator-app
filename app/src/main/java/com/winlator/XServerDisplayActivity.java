@@ -47,6 +47,7 @@ import com.winlator.contentdialog.VirGLConfigDialog;
 import com.winlator.contentdialog.WineD3DConfigDialog;
 import com.winlator.core.AdpfManager;
 import com.winlator.core.AppUtils;
+import com.winlator.core.ChromiumInstaller;
 import com.winlator.core.DisplayPerformanceHelper;
 import com.winlator.core.DefaultVersion;
 import com.winlator.core.EnvVars;
@@ -482,6 +483,7 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
             containerDataChanged = true;
         }
 
+        if (ChromiumInstaller.installIfNeeded(this)) ChromiumInstaller.createDesktopShortcut(this, container);
         WineStartMenuCreator.create(this, container);
         WineUtils.createDosdevicesSymlinks(container, true);
         WineUtils.applyBrowserTweaks(container);

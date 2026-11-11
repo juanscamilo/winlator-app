@@ -7,6 +7,10 @@
                 "path" : "Z:/opt/apps/7-Zip/7zFM.exe"
             },
             {
+                "name" : "Chromium",
+                "path" : "Z:/opt/chromium/chrome.exe"
+            },
+            {
                 "name" : "Internet Explorer",
                 "path" : "C:/windows/system32/iexplore.exe"
             },

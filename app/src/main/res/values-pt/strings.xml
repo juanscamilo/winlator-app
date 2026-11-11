@@ -309,4 +309,5 @@
     <string name="enable_adpf">Dicas de desempenho do Android (ADPF: acelera o jogo quando os frames atrasam)</string>
     <string name="thermal_throttling_warning">O aparelho está superaquecendo: o sistema está limitando o desempenho.</string>
     <string name="windows_app_gestures">Gestos estilo Windows App (segurar = botão direito, segurar e arrastar = selecionar, rolagem com dois dedos em todas as direções)</string>
+    <string name="phantom_process_notice">O Android limita os processos em segundo plano dos apps, o que pode fechar partes de programas Windows que usam muitos processos (Steam, navegadores, launchers): eles ficam rodando sem janela.\n\nPara corrigir, ative \"Desativar restrições de processos secundários\" nas Opções do desenvolvedor (se elas estiverem ocultas: Configurações > Sobre o telefone > Informações do software > toque 7 vezes em \"Número de compilação\").\n\nAbrir as Opções do desenvolvedor agora?</string>
 </resources>

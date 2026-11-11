@@ -3,6 +3,7 @@ package com.winlator.core;
 import android.content.Context;
 
 import com.winlator.container.Container;
+import com.winlator.xenvironment.RootFS;
 import com.winlator.win32.MSLink;
 
 import org.json.JSONArray;
@@ -22,6 +23,8 @@ public abstract class WineStartMenuCreator {
         else return MSLink.SW_SHOWNORMAL;
     }
 
+    private static File rootDir;
+
     private static void createMenuEntry(JSONObject item, File currentDir) throws JSONException {
         if (item.has("children")) {
             currentDir = new File(currentDir, item.getString("name"));
@@ -31,6 +34,10 @@ public abstract class WineStartMenuCreator {
             for (int i = 0; i < children.length(); i++) createMenuEntry(children.getJSONObject(i), currentDir);
         }
         else {
+            // Optional components (e.g. the bundled Chromium) only get an entry when installed.
+            String path = item.getString("path");
+            if (path.startsWith("Z:/opt/chromium/") && rootDir != null && !(new File(rootDir, path.substring(3))).isFile()) return;
+
             File outputFile = new File(currentDir, item.getString("name")+".lnk");
             MSLink.LinkInfo linkInfo = new MSLink.LinkInfo();
             linkInfo.targetPath = item.getString("path");
@@ -66,6 +73,7 @@ public abstract class WineStartMenuCreator {
     }
 
     public static void create(Context context, Container container) {
+        rootDir = RootFS.find(context).getRootDir();
         File startMenuDir = container.getStartMenuDir();
         File containerStartMenuFile = new File(container.getRootDir(), ".startmenu");
         removeOldMenu(containerStartMenuFile, startMenuDir);

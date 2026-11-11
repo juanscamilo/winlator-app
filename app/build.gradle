@@ -14,7 +14,7 @@ android {
         // binaries extracted to the app data dir (W^X), which breaks box64/wine.
         //noinspection ExpiredTargetSdkVersion
         targetSdkVersion 28
-        versionCode 36
+        versionCode 37
         versionName "11.2-s23"
 
         ndk {

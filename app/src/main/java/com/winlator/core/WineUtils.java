@@ -243,7 +243,8 @@ public abstract class WineUtils {
 
             final String chromePolicies = "Software\\Policies\\Google\\Chrome";
             final String edgePolicies = "Software\\Policies\\Microsoft\\Edge";
-            for (String key : new String[]{chromePolicies, edgePolicies}) {
+            final String chromiumPolicies = "Software\\Policies\\Chromium";
+            for (String key : new String[]{chromePolicies, edgePolicies, chromiumPolicies}) {
                 registryEditor.setDwordValue(key, "BackgroundModeEnabled", 0);
                 registryEditor.setDwordValue(key, "MetricsReportingEnabled", 0);
                 registryEditor.setDwordValue(key, "StartupBoostEnabled", 0);

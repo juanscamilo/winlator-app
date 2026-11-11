@@ -372,4 +372,5 @@
         <item>@string/upscaler_sgsr</item>
     </string-array>
     <string name="windows_app_gestures">Windows App style touch gestures (hold = right click, hold and drag = select, two-finger scroll in all directions)</string>
+    <string name="phantom_process_notice">Android limits the background processes of apps, which can close parts of Windows programs that use many processes (Steam, browsers, launchers): they keep running without a window.\n\nTo fix it, turn on \"Disable child process restrictions\" in Developer options (if Developer options is hidden: Settings > About phone > Software information > tap \"Build number\" 7 times).\n\nOpen Developer options now?</string>
 </resources>

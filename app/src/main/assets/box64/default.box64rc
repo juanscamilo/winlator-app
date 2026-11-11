@@ -149,7 +149,7 @@ BOX64_DYNAREC_BIGBLOCK=3
 BOX64_DYNAREC_CALLRET=1
 BOX64_DYNAREC_SAFEFLAGS=0
 BOX64_DYNAREC_FASTROUND=0
-BOX64_ENV=WINEARGS=--no-sandbox --disable-gpu-sandbox --renderer-process-limit=2 --disable-background-networking --no-first-run --no-default-browser-check
+BOX64_ENV=WINEARGS=--no-sandbox --disable-gpu --disable-gpu-sandbox --renderer-process-limit=2 --disable-background-networking --no-first-run --no-default-browser-check
 
 [msedge.exe]
 BOX64_DYNAREC_STRONGMEM=1

@@ -26,6 +26,7 @@ import androidx.preference.PreferenceManager;
 
 import com.google.android.material.navigation.NavigationView;
 import com.winlator.contentdialog.AboutDialog;
+import com.winlator.core.PhantomProcessHelper;
 import com.winlator.core.AppUtils;
 import com.winlator.core.Callback;
 import com.winlator.core.LocaleHelper;
@@ -80,6 +81,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             onNavigationItemSelected(navigationView.getMenu().findItem(menuItemId));
             navigationView.setCheckedItem(menuItemId);
             if (!requestAppPermissions()) RootFSInstaller.installIfNeeded(this);
+            PhantomProcessHelper.showNoticeIfNeeded(this);
 
             int containerId = intent.getIntExtra("container_id", 0);
             String startPath = intent.getStringExtra("start_path");

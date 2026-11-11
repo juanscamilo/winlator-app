@@ -13,6 +13,9 @@ on:
         options: [ sm8550, generic ]
 
 env:
+  # Bundled browser: ungoogled-chromium (BSD-3-Clause), pinned by version and checksum.
+  CHROMIUM_VERSION: 157.0.8103.38-1.1
+  CHROMIUM_SHA256: 7aae503c42974753de7e2fa3910106b8594b027e7e567baf7e69016b2a4e6c74
   BOX64_REF: v0.4.5-1
   BOX64_VERSION: 0.4.5
   TARGET_SOC: ${{ github.event.inputs.target_soc || 'sm8550' }}
@@ -129,6 +132,25 @@ jobs:
           cp wfm-build/wfm.exe patches/home/xuser/.wine/drive_c/windows/wfm.exe
           tar --owner=0 --group=0 --numeric-owner -C patches -cf - . | zstd -19 -T0 -f -o "$ASSET"
           rm -rf patches
+
+      # Pack Chromium as an app asset; it is extracted to <rootfs>/opt/chromium on first use.
+      - name: Bundle Chromium
+        run: |
+          set -e
+          NAME="ungoogled-chromium_${CHROMIUM_VERSION}_windows_x64"
+          curl -fsSL -o chromium.zip "https://github.com/ungoogled-software/ungoogled-chromium-windows/releases/download/${CHROMIUM_VERSION}/${NAME}.zip"
+          echo "${CHROMIUM_SHA256}  chromium.zip" | sha256sum -c -
+          unzip -q chromium.zip
+          mkdir -p chromium-pkg/opt
+          mv "$NAME" chromium-pkg/opt/chromium
+          test -f chromium-pkg/opt/chromium/chrome.exe
+          # Keep only a few UI languages to save space.
+          find chromium-pkg/opt/chromium/locales -name "*.pak" ! -name "en-US.pak" ! -name "pt-BR.pak" ! -name "pt-PT.pak" ! -name "es.pak" ! -name "es-419.pak" ! -name "ru.pak" -delete
+          mkdir -p app/src/main/assets/chromium
+          tar --owner=0 --group=0 --numeric-owner -C chromium-pkg -cf - . | zstd -19 -T0 -f -o app/src/main/assets/chromium/chromium.tzst
+          echo "$CHROMIUM_VERSION" > app/src/main/assets/chromium/version.txt
+          ls -la app/src/main/assets/chromium
+          rm -rf chromium.zip chromium-pkg
 
       - uses: gradle/actions/setup-gradle@v4
 

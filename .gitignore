@@ -13,3 +13,5 @@
 .externalNativeBuild
 .cxx
 local.properties
+# Chromium is packed by CI (see .github/workflows/build.yml)
+app/src/main/assets/chromium/
